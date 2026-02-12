@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        form { border: 1px solid #ccc; padding: 15px; margin-top: 20px; width: 300px; } /* Минимальный контейнер */
+        form p { margin-bottom: 10px; }
+        form label { display: block; font-weight: bold; }
+        form input, form select, form textarea { width: 100%; padding: 5px; border: 1px solid #ddd; box-sizing: border-box; }
+        button { margin-top: 10px; padding: 5px 10px; cursor: pointer; }
+        .back-link { margin-left: 10px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Сохранить</button>
+        <a href="{% url 'order_list' %}" class="back-link">Отмена</a>
+    </form>
+</body>
+</html>

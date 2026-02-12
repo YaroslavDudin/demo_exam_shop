@@ -1,0 +1,123 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Каталог товаров</title>
+    <link rel="icon" type="image/png" href="{% static 'icons/Icon.png' %}">
+
+    <style>
+    .discount-high {
+        background-color: #2E8B57;
+        color: white;
+    }
+
+    .out-of-stock {
+        background-color: #ADD8E6;
+    }
+
+    .old-price {
+        text-decoration: line-through;
+        color: red;
+    }
+</style>
+
+</head>
+<body>
+    
+{% if can_filter %}
+<form method="get">
+    <input
+        type="text"
+        name="q"
+        placeholder="Поиск по названию"
+        value="{{ query|default:'' }}"
+    >
+
+    <select name="sort">
+        <option value="">Без сортировки</option>
+        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>
+            Цена ↑
+        </option>
+        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>
+            Цена ↓
+        </option>
+    </select>
+
+    <button type="submit">Применить</button>
+</form>
+{% endif %}
+
+{% if is_admin or is_manager %}
+    <p>
+        <a href="{% url 'product_add' %}">Добавить товар</a>
+        <a href="{% url 'order_list' %}" class="orders-button">Посмотреть заказы</a> 
+    </p>
+{% endif %}
+
+<h1>Каталог товаров</h1>
+{% if not is_guest %}
+    <p>Вы вошли как: <strong>{{ request.user.get_full_name|default:request.user.username }}</strong> 
+    {% if is_admin %}(Администратор){% elif is_manager %}(Менеджер){% elif is_client %}(Клиент){% endif %}</p>
+
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Выйти</button>
+    </form>
+{% else %}
+    <p>Вы гость</p>
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Войти</button>
+    </form>
+{% endif %}
+{% for product in products %}
+
+    <div
+    class="
+        {% if product.quantity == 0 %}
+            out-of-stock
+        {% elif product.discount > 15 %}
+            discount-high
+        {% endif %}
+    "
+    style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" width="150">
+        {% else %}
+            <img src="{% static 'images/picture.png' %}" width="150">
+        {% endif %}
+        <p><strong>Артикул:</strong> {{ product.article }}</p>
+        <p><strong>Название:</strong> {{ product.name }}</p>
+        <p><strong>Описание:</strong> {{ product.description }}</p>
+        <p><strong>Категория:</strong> {{ product.category.name }}</p>
+        <p><strong>Производитель:</strong> {{ product.manufacturer.name }}</p>
+        <p><strong>Поставщик:</strong> {{ product.supplier.name }}</p>
+        <p>
+            <strong>Цена:</strong>
+            {% if product.discount > 0 %}
+                <span class="old-price">{{ product.price }}</span>
+                →
+                {{ product.final_price }}
+            {% else %}
+                {{ product.price }}
+            {% endif %}
+        </p>
+
+        <p><strong>Скидка:</strong> {{ product.discount }}%</p>
+        <p><strong>Остаток:</strong> {{ product.quantity }}</p>
+        {% if is_admin or is_manager %}
+    <p>
+        <a href="{% url 'product_edit' product.id %}">Редактировать</a> |
+        <a href="{% url 'product_delete' product.id %}">Удалить</a>
+    </p>
+{% endif %}
+
+    </div>
+{% empty %}
+    <p>Товары отсутствуют</p>
+{% endfor %}
+
+</body>
+</html>

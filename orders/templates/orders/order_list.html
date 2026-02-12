@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список заказов</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .controls { margin-bottom: 20px; }
+        .controls a { margin-right: 10px; text-decoration: none; padding: 5px 10px; border: 1px solid #ccc; background-color: #eee; } /* Добавил немного стилей для кнопок */
+        .controls a:hover { background-color: #ddd; }
+        .add-order-button { background-color: #d4edda; border-color: #c3e6cb; } /* Стиль для кнопки "Добавить заказ" */
+        .back-to-products-button { background-color: #e0f2f7; border-color: #b3e5fc; } /* Стиль для кнопки "Вернуться" */
+        .action-links a { margin-right: 10px; text-decoration: none; }
+        .delete-link { color: red; }
+        code { background-color: #eee; padding: 2px 5px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Список заказов</h1>
+
+    <div class="controls">
+        <a href="{% url 'product_list' %}" class="back-to-products-button">Вернуться к товарам</a> 
+        {% if is_admin %}
+            <a href="{% url 'order_add' %}" class="add-order-button">Добавить заказ</a>
+        {% endif %}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>№ Заказа</th>
+                <th>Дата заказа</th>
+                <th>Дата доставки</th>
+                <th>Товар</th>
+                <th>Пункт выдачи</th>
+                <th>ФИО Клиента</th>
+                <th>Код</th>
+                <th>Статус</th>
+                {% if is_admin or is_manager %}
+                    <th>Действия</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.order_number }}</td>
+                <td>{{ order.order_date|date:"d.m.Y" }}</td>
+                <td>{{ order.delivery_date|date:"d.m.Y" }}</td>
+                <td>{{ order.product.article }}</td>
+                <td>{{ order.pick_up_point.id }}</td>
+                <td>{{ order.customer_full_name }}</td>
+                <td><code>{{ order.receive_code }}</code></td>
+                <td>{{ order.status }}</td>
+                {% if is_admin  %}
+                    <td class="action-links">
+                        <a href="{% url 'order_edit' order.pk %}">Редакт.</a>
+                        <a href="{% url 'order_delete' order.pk %}" class="delete-link">Удалить</a>
+                    </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{% if is_admin or is_manager %}9{% else %}8{% endif %}" style="text-align: center;">Заказов нет.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
